@@ -1,0 +1,442 @@
+<!-- Page Header -->
+<div class="theme-page-body-header-box" md-colors="{background: '{{themeColor}}-500'}">
+        <div class="theme-page-body-header-title" layout="row" layout-align="space-between center">
+            <h1>Quick Quote Creator </h1>
+        </div>
+    </div>
+    <!-- End Page Header -->
+    
+    <!-- Page content -->
+    <md-content class="page-content">
+    
+        <form name="quoteForm" novalidate class="md-block-input form-bordered">
+    
+            <section class="page-section  md-whiteframe-3dp border-radius-10" ng-hide="isPageLoading">
+                <!--page loader-->
+                <div class="alert alert-info" ng-if='isProductLoading'>Please wait... while we are getting list of products...</div>
+                <div class="autocomplete">
+            
+                    <md-icon class="icon-left">search</md-icon>
+                    <md-autocomplete ng-disabled="isProductLoading" md-search-text="searchText" md-selected-item-change="selectedItemChange(item)"
+                        md-items="item in querySearch(searchText)" md-item-text="item.display" md-min-length="1" placeholder="Search for product? eg. Led Street light">
+                        <md-item-template>
+                            <img ng-src="{{item.product_image}}" class="image-sm">
+                            <span md-highlight-text="searchText" md-highlight-flags="^i">{{item.title}}</span>
+                            <span class="pull-right"> ${{item.price}}</span>
+                        </md-item-template>
+                        <md-not-found>
+                            No states matching "{{searchText}}" were found.
+                            <a ng-click="newState(searchText)">Create a new one!</a>
+                        </md-not-found>
+                    </md-autocomplete>
+                </div>
+                <div class="header-group" layout="row" layout-align="space-between center">
+                    <h3>Products</h3>
+                    <div>
+                        <md-button class="md-button-text" ng-click="addNew()">
+                            <md-icon>add</md-icon> Add New</md-button>
+                    </div>
+                </div>
+                <div class="text-center" ng-if="selectedProducts.length ==0">
+                    <i> No Product added,
+                        <a ng-click="addNew()"> Add new product </a>
+                    </i>
+                </div>
+                <!-- <pre> {{quote.products | json}}</pre> -->
+            
+                <uib-accordion>
+                    <div ng-repeat="product in selectedProducts track by $index" uib-accordion-group template-url="template/accordion-group.html"
+                        class="panel-default">
+                        <ng-form name="childForm">
+            
+                            <uib-accordion-heading>
+                                <span ng-if="quote.products[$index].title">
+                                    {{quote.products[$index].title}} (${{quote.products[$index].price}})
+                                </span>
+                                <span ng-if="!quote.products[$index].title">No title </span>
+                                <md-button ng-click="remove($index)" class="md-icon-button pull-button-right ">
+                                    <md-icon>close</md-icon>
+                                    <md-tooltip> Remove </md-tooltip>
+                                </md-button>
+                                <span ng-if="childForm.$invalid" class="invalid">Invalid</span>
+            
+                            </uib-accordion-heading>
+                            
+                            <div layout="column" layout-align="center center" class="product-image">
+                                <!-- <img ngf-thumbnail="file || product.product_image || 'assets/images/image.jpg'">
+                                <a ng-model="file" ngf-select="selectedFile($file, $index)">Change Image</a> -->
+                                <img ngf-thumbnail="quote.products[$index].file || 'assets/images/image.jpg'">
+                                <input type="file" ngf-select id="myUpload{{$index}}" class="myUploadbutton" onchange="angular.element(this).scope().selectedFile(this)" styled-upload-button7>
+                                
+                            </div>
+                            <!-- {{childForm}} -->
+                            <md-input-container class="md-block">
+                                <label>Product Name / Title</label>
+                                <input required name="title" ng-model="quote.products[$index].title">
+                                <div ng-messages="childForm.title.$error">
+                                    <div ng-message="required">Product name is required.</div>
+                                </div>
+                            </md-input-container>
+            
+                            <div layout="row" layout-align="space-between center">
+    
+                                
+            
+                                <md-input-container class="md-block">
+                                    <label>Qty</label>
+                                    <input type="number" required min="1" name="qty" ng-model="quote.products[$index].qty" ng-change="calc(quote.products[$index], $index)">
+                                    <div ng-messages="childForm.qty.$error">
+                                        <div ng-message="required">Qty is required.</div>
+                                    </div>
+                                </md-input-container>
+            
+                                <md-input-container class="md-block">
+                                    <label>Cost (in $)</label>
+                                    <input type="number" name="price" ng-model="quote.products[$index].price" ng-change="calc(quote.products[$index], $index)">
+                                    <div ng-messages="childForm.price.$error">
+                                        <div ng-message="required">Cost is required.</div>
+                                    </div>
+                                </md-input-container>
+            
+                                <md-input-container class="md-block">
+                                    <label>Extended Cost (in $)</label>
+                                    <input required name="extended_cost" ng-model="quote.products[$index].extended_cost" readonly>
+                                    <div ng-messages="childForm.extended_cost.$error">
+                                        <div ng-message="required">Extended cost is required.</div>
+                                    </div>
+                                </md-input-container>
+                            </div>
+                            <div layout="row" layout-align="space-between center">
+                                <md-input-container class="md-block">
+                                    <label>Install Cost/One(in $)</label>
+                                    <input type="number" required min="1"  name="install" ng-model="quote.products[$index].install" ng-change="calc(quote.products[$index], $index)">
+                                    <div ng-messages="childForm.install.$error">
+                                        <div ng-message="required">Qty is required.</div>
+                                    </div>
+                                </md-input-container>
+                                <md-input-container class="md-block">
+                                    <label>Install Cost(in $)</label>
+                                    <input type="number" required min="1" name="install_products" ng-model="quote.products[$index].install_products" readonly>
+                                    <div ng-messages="childForm.install_products.$error">
+                                        <div ng-message="required">Qty is required.</div>
+                                    </div>
+                                </md-input-container>
+                            </div>
+                        </ng-form>
+                    </div>
+            
+                </uib-accordion>
+            
+            
+            </section>
+         
+            <section class="page-section  md-whiteframe-3dp border-radius-10" ng-hide="isPageLoading">
+                <!--page loader-->
+            
+            
+                
+                    <alert-message ng-if="alert" data="alert"> </alert-message>
+                    <h4 flex='100' class="">
+                        <i>Quote Date</i>
+                    </h4>
+                    <!-- <div layout="row">
+                        
+                        <md-input-container class="md-block">
+                            <label>Title</label>
+                            <input required name="proname" ng-model="quote.proname" required>
+                            <div ng-messages="quoteForm.proname.$error">
+                                <div ng-message="required">This is required.</div>
+                            </div>
+                        </md-input-container>
+            
+                        <div class="space"></div>
+                        <md-input-container class="md-block">
+                            <label>Address</label>
+                            <input name="proemail" required="" type='text' ng-model="quote.proemail">
+                            <div ng-messages="quoteForm.proemail.$error">
+                                <div ng-message="required">This is required.</div>
+                            <div ng-message="email">Emial must be valid.</div> 
+                            </div>
+                        </md-input-container>
+                    </div> -->
+    
+                    <div layout="row">
+                        <!-- <md-input-container class="md-block">
+                            
+                            <input type='file' id="projectimg" name="projectimg" ng-model="quote.projectimg" onchange="angular.element(this).scope().getProimg(this)" styled-upload-button4/>
+                        </md-input-container>
+                    
+                        <div class="space"></div> -->
+                        <md-input-container class="md-block">
+                            <label>Billing Date</label>
+                            <md-datepicker required ng-model="quote.date" type="date"  md-placeholder="Choose date" name="quotedate"></md-datepicker>
+                            <div ng-messages="quoteForm.quotedate.$error">
+                                <div ng-message="required">This is required.</div>
+                                <div ng-message="date">Emial must be valid.</div>
+                            </div>
+                        </md-input-container>
+                        <div class="space"></div>
+                        <md-input-container class="md-block">
+                            <label>Due Date</label>
+                            <md-datepicker required ng-model="quote.duedate" type="date"  md-placeholder="Choose date" name="duedate"></md-datepicker>
+                        </md-input-container>
+                        <div class="space"></div>
+                        <md-input-container class="md-block">
+                                <label>Quote Number</label>
+                                <input required name="number" ng-model="quote.number" required>
+                                <div ng-messages="quoteForm.number.$error">
+                                    <div ng-message="required">This is required.</div>
+                                </div>
+                            </md-input-container>
+                    </div>
+    
+                    <h4 flex='100' class="">
+                        <i>Bill To</i>
+                    </h4>
+                    <div layout="row">
+                    
+                        <md-input-container class="md-block">
+                            <label>Name</label>
+                            <input required name="name" ng-model="quote.name" required>
+                            <div ng-messages="quoteForm.name.$error">
+                                <div ng-message="required">This is required.</div>
+                            </div>
+                        </md-input-container>
+                        <div class="space"></div>
+                        <md-input-container class="md-block">
+                                <label>Company</label>
+                                <input required name="company" ng-model="quote.company" required>
+                            </md-input-container>
+                    
+                        
+                    </div>
+                    
+                    <div layout="row">
+                        <md-input-container class="md-block">
+                            <label>Email</label>
+                            <input name="email" type='email' ng-model="quote.email">
+                            <div ng-messages="quoteForm.email.$error">
+                                <div ng-message="required">This is required.</div>
+                                <div ng-message="email">Emial must be valid.</div>
+                            </div>
+                        </md-input-container>
+                        <div class="space"></div>
+                        <md-input-container class="md-block">
+                            <label>Phone</label>
+                            <input name="mobile" ng-model="quote.mobile">
+                        </md-input-container>
+                    
+                        <div class="space"></div>
+                        <md-input-container class="md-block">
+                            <label>Address</label>
+                            <input name="address" ng-model="quote.address">
+                        </md-input-container>
+                    </div>  
+                    
+                    <h4 flex='100' class="">
+                        <i>Price Summary</i>
+                    </h4>
+                    <div layout="row">
+                        <md-input-container class="md-block">
+                            <label>Total Materials Cost ($)</label>
+                            <input name="material_cost" ng-model="quote.material_cost" ng-pattern="/^\d{0,9}(\.\d{1,9})?$/" readonly>
+                            <div ng-messages="quoteForm.material_cost.$error">
+                                <div ng-message="required">This is required.</div>
+                                <div ng-message="pattern">Please enter valid amount</div>
+                            </div>
+                        </md-input-container>
+            
+                        <div class="space"></div>
+    
+    
+                        <md-input-container class="md-block">
+                            <label>Tax ($)</label>
+                            <input name="tax" ng-model="quote.tax" ng-change="getTotal()" ng-pattern="/^\d{0,9}(\.\d{1,9})?$/" readonly>
+                            <div ng-messages="quoteForm.tax.$error">
+                                <div ng-message="required">This is required.</div>
+                                <div ng-message="pattern">Please enter valid amount</div>
+                            </div>
+                        </md-input-container>
+                        <md-select ng-model="quote.rate" placeholder="select tax rate" class="md-no-underline" ng-change="update()">
+                            <md-option value="7">7%</md-option>
+                            <md-option value="6">6%</md-option>
+                        </md-select>
+                        
+                        <div class="space"></div>
+    
+                        <md-input-container class="md-block">
+                            <label>Total Installation Cost ($)</label>
+                            <input name="installation" ng-model="quote.installation" ng-change="getTotal()" ng-pattern="/^\d{0,9}(\.\d{1,9})?$/" readonly>
+                            <div ng-messages="quoteForm.installation.$error">
+                                <div ng-message="required">This is required.</div>
+                                <div ng-message="pattern">Please enter valid amount</div>
+                            </div>
+                        </md-input-container>
+                        
+                        
+                    </div>
+    
+                    <div layout="row">
+                        <md-input-container class="md-block">
+                            <label>Shipping ($)</label>
+                            <input type="number" name="shipping" ng-model="quote.shipping" ng-change="getTotal()" ng-pattern="/^\d{0,9}(\.\d{1,9})?$/">
+                            <div ng-messages="quoteForm.shipping.$error">
+                                <div ng-message="required">This is required.</div>
+                                <div ng-message="pattern">Please enter valid amount</div>
+                            </div>
+                        </md-input-container>
+                    
+                        <div class="space"></div>
+                    
+                    
+                        <md-input-container class="md-block">
+                            <!-- <label>Less Rebates and Incentives ($)</label>
+                            <input name="incentive" ng-model="quote.incentive" ng-change="getTotal()" ng-pattern="/^[0-9]*$/">
+                            <div ng-messages="quoteForm.incentive.$error">
+                                <div ng-message="required">This is required.</div>
+                                <div ng-message="pattern">Please enter valid amount</div>
+                            </div> -->
+                        </md-input-container>
+                    
+                    </div>
+    
+                    <div layout="row">
+                        <md-input-container class="md-block">
+                            <label>Total Price ($)</label>
+                            <input name="total" ng-model="quote.total" ng-pattern="/^\d{0,9}(\.\d{1,9})?$/" readonly>
+                            <div ng-messages="quoteForm.incentive.$error">
+                                <div ng-message="required">This is required.</div>
+                                <div ng-message="pattern">Please enter valid amount</div>
+                            </div>
+                        </md-input-container>
+                        <div class="space"></div>
+                        <md-input-container class="md-block">
+                            <label>Paid/Due</label>
+                            <md-checkbox ng-model="quote.paid" aria-label="Checkbox 2" ng-true-value="'PAID'" ng-false-value="'DUE'" class="md-warn md-align-top-left" flex="" style="margin-left: 100px;">
+                                {{ quote.paid }}
+                            </md-checkbox>
+                        </md-input-container>
+                    </div>
+    
+                    <h4 flex='100' class="">
+                        <i>Receipt Notes</i>
+                    </h4>
+                    <md-input-container class="md-block" flex='100'>
+                        
+                        <textarea rows="8" name="notes" ng-model="quote.notes"></textarea>
+                        <div ng-messages="quoteForm.installation.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="pattern">Please enter valid amount</div>
+                        </div>
+                    </md-input-container>
+    
+                    <!-- pdf downloader library-->
+                    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.22/pdfmake.min.js"></script> -->
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+                    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/amcharts/3.21.13/plugins/export/libs/pdfmake/vfs_fonts.js"></script> -->
+                    <!-- pdf downloader library-->
+                    <div class="margin-top-10">
+                        <md-button ng-disabled="isLoading" type="submit" ng-click="export(quote)" aria-label="submit" class="md-raised md-primary btn-block max-300 btn-action-form">
+                            <span ng-show="isLoading" layout="row" class="btn-loading" layout-align="center center">
+                                <md-progress-circular md-mode="indeterminate" md-diameter="15">
+                                </md-progress-circular>
+                                <small> Processing</small>
+                            </span>
+                            <span ng-hide="isLoading"> Generate quote </span>
+                        </md-button>
+                    </div>
+                    <style>
+                        p {
+                            margin: 0px;
+                        }
+                        .table-header {
+                            background: #86f179;
+                        }
+                        .table-data {
+                            text-align: center;
+                            font-size: 30px;
+                        }
+                        table {
+                            border-collapse: collapse;
+                        }
+
+                        table, th, td {
+                            border: 1px solid black;
+                        }
+                        .notes {
+                            color: black;font-size: 35px;
+                        }
+                    </style>
+                    <div id="canvas" style="width: 1500px; display:none; background-color: white;">
+                        <img src="assets/images/new/headerinvoice.png" style="width: 1500px;height: 350px;"/>
+                        <div style="display: inline-flex; margin-top: 50px;">
+                            <div style="width: 700px; text-align: left;">
+                                <p style="font-size: 50px; color: #000000; text-align: left; border-bottom: 2px solid black;">BILLING TO</p>
+                                <p style="font-size: 30px; color: #000000; text-align: left;">Name : {{quote.name}}</p>
+                                <p style="font-size: 30px; color: #000000; text-align: left;">Company : {{quote.company}}</p>
+                                <p style="font-size: 30px; color: #000000; text-align: left;">Email : {{quote.email}}</p>
+                                <p style="font-size: 30px; color: #000000; text-align: left;">Phone : {{quote.mobile}}</p>
+                                <p style="font-size: 30px; color: #000000; text-align: left;">Address : {{quote.address}}</p>
+                            </div>
+                            <div style="width: 750px; text-align: right;">
+                                <p style="font-size: 60px; color: #000000; text-align: right;">Quote</p>
+                                <p style="font-size: 30px; color: #000000; text-align: right;">Quote NO.  #{{quote.number}}</p>
+                                <p style="font-size: 30px; color: #000000; text-align: right;">BILLING DATE  {{invoicedate_string}}</p>
+                                <p style="font-size: 30px; color: #000000; text-align: right;">DUE DATE  {{duedate_string}}</p>
+                            </div>
+                        </div>
+                        <table style="width: 100%; margin-top: 100px;">
+                            <thead>
+                                <tr>
+                                    <th class="table-data table-header">Description</th>
+                                    <th class="table-data table-header">Qty</th>
+                                    <th class="table-data table-header">Rate</th>
+                                    <th class="table-data table-header">Shipping</th>
+                                    <th class="table-data table-header">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="data in quote.products" >
+                                    <td class="table-data">{{data.title}}</td>
+                                    <td class="table-data">${{data.qty}}</td>
+                                    <td class="table-data">{{data.install+data.install}}</td>
+                                    <td class="table-data">{{quote.shipping}}</td>
+                                    <td class="table-data">${{(data.install+data.price)*(data.qty)}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="display: inline-flex; margin-top: 50px;">
+                            <div style="width: 200px; text-align: center; margin-top: 100px;">
+                                <p style="font-size: 60px; border: 2px solid black;">{{quote.paid}}</p>
+                            </div>
+                            <div style="width: 750px; text-align: right;margin-left: 500px;">
+                                <table style="width: 100%; margin-top: 100px;">
+                                    <tbody>
+                                        <tr>
+                                            <td class="table-data table-header">SUBTOTAL</td>
+                                            <td class="table-data table-header">${{subtotal_String}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="table-data">TAX</td>
+                                            <td class="table-data">${{tax_string}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="table-data table-header">TOTAL DUE</td>
+                                            <td class="table-data table-header">${{total_cost_string}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <p style="border-bottom: 1px solid black;font-size: 50px;color: black;">Receipt Notes</p>
+                        <p class="notes">-Make all checks payable to: Lighting of Tomorrow, LLC</p>
+                        <p class="notes">-Account number for wire transfers: 229054572226</p>
+                        <p class="notes">-Routing number for wire transfers: 026009593</p>
+                        <p class="notes">-SWIFT code for wire transfers: BOFAUS3N -Mail Checks to:</p>
+                        <p class="notes">-Lighting of Tomorrow</p>
+                        <p class="notes">-840 E Oakland Park Blvd #117, Oakland Park, FL 33334</p>
+                        <img src="assets/images/new/footerInvoice.png" id="invoice-bottom" style="width: 1490px;height: 210px;"/> 
+                    </div>
+            </section>
+        </form>
+    </md-content>

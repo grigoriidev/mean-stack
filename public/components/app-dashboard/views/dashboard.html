@@ -1,0 +1,403 @@
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ng-sortable/1.3.8/ng-sortable.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/ng-sortable/1.3.8/ng-sortable.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/ng-sortable/1.3.8/ng-sortable.style.min.css">
+<div ng-if="!isLoginRoute">
+<!-- Page Header -->
+<div class="theme-page-body-header-box" md-colors="{background: '{{themeColor}}-500'}">
+    <div class="theme-page-body-header-title">
+        <!-- title -->
+        <h1><medium>Hello {{isLogin.name}}, Welcome to your dashboard </medium> </h1>
+    </div>
+</div>
+<!-- End Page Header -->
+<style>
+        body{
+        font-family: Arial;
+        color: #555;
+      }
+      .form{
+        background-color: #ffffff;
+        padding: 20px;
+      }
+      .form input[type="text"]{
+        padding: 10px;
+        box-shadow: inset 2px 2px 2px rgba(2,5,0,0.2);
+        border: none;
+      }
+      .button{
+        display: inline-block;
+        padding: 10px;
+        background: linear-gradient(#79a6e2 2%, #3366aa 5%, #1e4e8e);
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+        font-weight: bold;
+        font-size: 16px;
+        box-shadow: 0px 3px 0px #113c75,
+                    0px 5px 5px #333;
+        margin-right: 5px;
+      }
+      
+      .button-backlog{
+        background: transparent;
+        box-shadow: none;
+        color: #3366aa;
+        font-weight: normal;
+      }
+      .button-progress{
+        background: transparent;
+        box-shadow: none;
+        color: #c06300;
+        font-weight: normal;
+      }
+      .button-done{
+        background: transparent;
+        box-shadow: none;
+        color: #007b03;
+        font-weight: normal;
+      }
+      .button-delete{
+        background: transparent;
+        box-shadow: none;
+        color: #be0000;
+        font-weight: normal;
+      }
+      .form > h2{
+        margin-top: 0
+      }
+      .col-3rds{
+        box-sizing: border-box;
+        width:33.333%;
+        float:left;
+      }
+      .flex{
+        display: flex;
+        flex-direction: row;
+      }
+      .scrum-board{
+        flex: 1;
+        padding:20px;
+        border-right:1px solid #ddd;
+        border-bottom:1px solid #ddd;
+      }
+      .scrum-board:first-child{
+        flex: 1;
+        padding:20px;
+        border-left:1px solid #ddd;
+      }
+      .world-board{
+        flex: 1;
+        padding:20px;
+        border-right:1px solid #ddd;
+        border-bottom:1px solid #ddd;
+      }
+      .world-board:first-child{
+        flex: 1;
+        padding:20px;
+        border-left:1px solid #ddd;
+      }
+      .input-group{
+        position: relative;
+        display: block;
+        padding: 10px;
+        border: 1px solid #dddddd;
+        border-left: 5px solid #ccc;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        background-color: #f1f1f1;
+      }
+      .input-group span{
+        color:#333;
+        font-weight: bold;
+      }
+      .world-input-group{
+        position: relative;
+        display: block;
+        padding: 10px;
+        border: 1px solid #dddddd;
+        border-left: 5px solid #ccc;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        background-color: #f1f1f1;
+      }
+      .world-input-group span{
+        color:#333;
+        font-weight: bold;
+      }
+      .inline{
+        display: inline;
+      }
+      .float-right{
+        float: right;
+      }
+      .overflow{
+        overflow: auto;
+        width: 90%;
+      }
+      .margin-top-10{
+        margin-top: 0px;
+        text-align: right;
+    
+      }
+      .input-title {
+        border:none;
+        width: 85%;
+        background: #f1f1f1;
+        font-weight: bold;
+      }
+      .drag{
+        font-size: 12px;
+        color: #333;
+        text-decoration: none;
+        position: absolute;
+          top:5px;
+        right: 5px;
+        border: 1px solid #ccc;
+        padding: 3px;
+        border-radius: 5px;
+        cursor: move;
+      }
+      .placeholder {
+        display: block;
+        background-color: #fff;
+        border: 5px dashed #ededed;
+        min-height: 100px;
+        margin-bottom: 10px;
+      }
+      textarea {
+          width: 100%;
+          height: 100px;
+          border: none;
+          background: rgba(0,0,0,0);
+          font-family:sans-serif;
+          font-size: 20px;
+          font-weight: bold;
+      }
+    </style>
+<!-- Page content --> 
+<md-content class="page-content" id="scrumboard"  ng-controller="dashbaordController">
+    <section class="page-section  md-whiteframe-3dp border-radius-10" ng-hide="isPageLoading">
+      <div class="row">
+        <div>
+          <div class="form">
+              <h1>Light Up World Board</h1>
+              <input type="text" placeholder="Type Task" id="world-task" ng-show="superadmin"/>
+              <button class="button" id="world-add-button" ng-show="superadmin">Add Task</button>
+              <button class="button" id="world-save-button" style="float: right;" ng-show="superadmin">Save Board</button>
+          </div>
+          <div class="flex">
+              <div class="world-board world-backlog" style="display: grid; grid-template-columns: repeat(4, 1fr); grid-gap: 10px; border-top:1px solid #ddd;">
+                <div class="world-input-group overflow" ng-repeat="admintask in admintasks track by $index">
+                  <div class="margin-top-10">
+                    <button class="button world-button-delete" ng-show="superadmin">delete</button>
+                  </div>
+                  <textarea class="world-text-area">{{admintask}}</textarea>
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- layout  -->
+    <section class="page-section  md-whiteframe-3dp border-radius-10" ng-hide="isPageLoading">
+        <div class="row" >
+            <!-- flex -->
+            <div>
+                <div class="form">
+                    <h1>Scrum Board</h1>
+                    <input type="text" placeholder="Type Task" id="task" />
+                    <button class="button" id="add-button">Add Task</button>
+                    <button class="button" id="save-button" style="float: right;">Save Board</button>
+                </div>
+                <div class="flex">
+                    <div class="scrum-board backlog" style="display: grid; grid-template-columns: repeat(4, 1fr); grid-gap: 10px; border-top:1px solid #ddd;">
+
+                      <div class="input-group overflow">
+                        <div class="margin-top-10">
+                          <h4 style="text-align: left;color: red;">*Super Admin Task</h4>
+                          <!-- <button class="button button-delete" ng-if="superadmin">delete</button> -->
+                        </div>
+                        <!-- <textarea ng-class="superadmin ? 'user-text-area' : ''" ng-readonly="!superadmin"></textarea> -->
+                        <textarea class="user-text-area" ng-readonly="!superadmin">{{superadmintask}}</textarea>
+                      </div>
+
+                      <div class="input-group overflow" ng-repeat="task in usertasks track by $index">
+                        <div class="margin-top-10">
+                          <button class="button button-delete">delete</button>
+                        </div>
+                        <textarea class="user-text-area">{{task}}</textarea>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+            <script>
+                $( document ).ready(function() {
+                  //scrum board
+                  $(".button-delete").on("click", function() {
+                      angular.element(document.getElementById('scrumboard')).scope().deleteTask();
+                      $(this).parents(".input-group").remove();
+                  });
+                  $('textarea.user-text-area').bind('input propertychange', function() {
+                    var array = [];
+                    console.log($(this).val());
+                    $(".input-group textarea.user-text-area").each(function(index) {
+                      array.push($(this).val());                      
+                    });
+                    angular.element(document.getElementById('scrumboard')).scope().updateTask(array);                   
+                  });
+                  //world board
+                  $(".world-button-delete").on("click", function() {
+                      angular.element(document.getElementById('scrumboard')).scope().admindeleteTask();
+                      $(this).parents(".world-input-group").remove();
+                  });
+                  $('textarea.world-text-area').bind('input propertychange', function() {
+                    var array = [];
+                    console.log($(this).val());
+                    $(".world-input-group textarea.world-text-area").each(function(index) {
+                      array.push($(this).val());                      
+                    });
+                    angular.element(document.getElementById('scrumboard')).scope().adminupdateTask(array);                   
+                  });
+                });
+               
+                //Button Functions------------------------------------------
+                  function init() {
+                    $(".button-delete").on("click", function() {
+                      angular.element(document.getElementById('scrumboard')).scope().deleteTask();
+                      $(this).parents(".input-group").remove();
+                    });
+                    //world board
+                    $(".world-button-delete").on("click", function() {
+                      angular.element(document.getElementById('scrumboard')).scope().admindeleteTask();
+                      $(this).parents(".world-input-group").remove();
+                    });
+                    var placeholderDiv = document.createElement("div");
+                    var placeholderAtt = document.createAttribute("class");
+                    var taskDivAttVal = placeholderAtt.value = "placeholder";
+                    placeholderDiv.setAttributeNode(placeholderAtt);
+                  }
+
+                  $(".button-delete").on("click", function() {
+                    angular.element(document.getElementById('scrumboard')).scope().deleteTask();
+                    $(this).parents(".input-group").remove();
+                  });
+                  //world board
+                  $(".world-button-delete").on("click", function() {
+                    angular.element(document.getElementById('scrumboard')).scope().admindeleteTask();
+                    $(this).parents(".world-input-group").remove();
+                  });
+                //Save Funtion----------------------------------------
+
+                  $("#save-button").on("click", function(){
+                    var array = [];
+                    $(".input-group textarea.user-text-area").each(function(index) {
+
+                      array.push($(this).val());
+                    });
+                    angular.element(document.getElementById('scrumboard')).scope().updateTask(array);
+                  });
+
+                  $("#world-save-button").on("click", function(){
+                    var array = [];
+                    $(".world-input-group textarea.world-text-area").each(function(index) {
+
+                      array.push($(this).val());
+                    });
+                    angular.element(document.getElementById('scrumboard')).scope().adminupdateTask(array);
+                  });
+                 
+                //Create Task------------------------------------------
+                $("#add-button").on("click", function() {
+
+                  var taskDiv = document.createElement("div");
+                  var taskSpan = document.createElement("textarea");
+                  var taskSpanAtt = document.createAttribute("class");
+                  var taskSpanAttVal = taskSpanAtt.value = "user-text-area";
+                  taskSpan.setAttributeNode(taskSpanAtt);
+                  var buttonsDiv = document.createElement("div");
+                
+                  var buttonDelete = document.createElement("button");
+      
+                  var taskDivAtt = document.createAttribute("class");
+                  var buttonsDivAtt = document.createAttribute("class");
+                
+                  var buttonDeleteAtt = document.createAttribute("class");
+      
+                  var taskDivAttVal = taskDivAtt.value = "input-group overflow";
+                  var buttonsDivAttVal = buttonsDivAtt.value = "margin-top-10";
+                
+                  var buttonDeleteAttVal = buttonDeleteAtt.value = "button button-delete";
+                  
+                  taskDiv.setAttributeNode(taskDivAtt);
+                  
+                  buttonsDiv.setAttributeNode(buttonsDivAtt);
+          
+                  buttonDelete.setAttributeNode(buttonDeleteAtt);
+      
+                  var taskText = document.createTextNode($("#task").val());
+                  
+                  var buttonDeleteText = document.createTextNode("delete");
+                  
+                  taskDiv.appendChild(buttonsDiv);
+
+                  buttonDelete.appendChild(buttonDeleteText);
+                  
+                  buttonsDiv.appendChild(buttonDelete);
+                  taskSpan.appendChild(taskText);
+                  
+                  taskDiv.appendChild(taskSpan);
+                  $('.backlog').append(taskDiv);
+                  init();
+                });
+
+                $("#world-add-button").on("click", function() {
+
+                  var taskDiv = document.createElement("div");
+                  var taskSpan = document.createElement("textarea");
+                  var taskSpanAtt = document.createAttribute("class");
+                  var taskSpanAttVal = taskSpanAtt.value = "world-text-area";
+                  taskSpan.setAttributeNode(taskSpanAtt);
+                  var buttonsDiv = document.createElement("div");
+
+                  var buttonDelete = document.createElement("button");
+
+                  var taskDivAtt = document.createAttribute("class");
+                  var buttonsDivAtt = document.createAttribute("class");
+
+                  var buttonDeleteAtt = document.createAttribute("class");
+
+                  var taskDivAttVal = taskDivAtt.value = "world-input-group overflow";
+                  var buttonsDivAttVal = buttonsDivAtt.value = "margin-top-10";
+
+                  var buttonDeleteAttVal = buttonDeleteAtt.value = "button world-button-delete";
+
+                  taskDiv.setAttributeNode(taskDivAtt);
+
+                  buttonsDiv.setAttributeNode(buttonsDivAtt);
+
+                  buttonDelete.setAttributeNode(buttonDeleteAtt);
+
+                  var taskText = document.createTextNode($("#world-task").val());
+
+                  var buttonDeleteText = document.createTextNode("delete");
+
+                  taskDiv.appendChild(buttonsDiv);
+
+                  buttonDelete.appendChild(buttonDeleteText);
+
+                  buttonsDiv.appendChild(buttonDelete);
+                  taskSpan.appendChild(taskText);
+
+                  taskDiv.appendChild(taskSpan);
+                  $('.world-backlog').append(taskDiv);
+                  init();
+                  });
+            </script>
+        </div>
+    </section>
+</md-content>
+<!--End Page content -->
+
+</div>

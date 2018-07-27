@@ -1,0 +1,799 @@
+<style>
+    th.coast-waiting, td.coast-waiting {
+        border-top: 5px solid black;
+        text-align: center;
+        font-size: 35px;
+    }
+</style>
+<style>
+    .content {
+        display: block;
+        margin-left: 5%;
+        margin-top: 100px;
+    }
+    .wrapper.col-2 {
+        display:inline-block;
+        width: 45%;
+        min-height: 600px;
+        padding-top: 100px;
+    }
+    .wrapper.col-3 {
+        display:inline-block;
+        width: 70%;
+        min-height: 600px;
+       
+    }
+    .wrapper {
+        position: relative;
+    }
+    .summary-left {
+        font-size: 50px;
+        text-align: left;
+    }
+    .summary-right {
+        font-size: 50px;
+        text-align: right;
+    }
+    .note-title {
+        font-size: 40px;
+        border-bottom: 3px solid black;
+     
+        text-align: center;
+    }
+    .note-text {
+        font-size: 30px;
+        
+        
+    }
+</style>
+<!-- Page Header -->
+<div class="theme-page-body-header-box" md-colors="{background: '{{themeColor}}-500'}">
+    <div class="theme-page-body-header-title" layout="row" layout-align="space-between center">
+        <h1>Roi Creator </h1>
+    </div>
+</div>
+<!-- End Page Header -->
+
+<!-- Page content -->
+<md-content class="page-content">
+
+    <form name="quoteForm" novalidate class="md-block-input form-bordered">
+
+        <section class="page-section  md-whiteframe-3dp border-radius-10" ng-hide="isPageLoading">
+            <!--page loader-->
+            <div class="alert alert-info" ng-if='isProductLoading'>Please wait... while we are getting list of products...</div>
+            <div class="autocomplete">
+        
+                <md-icon class="icon-left">search</md-icon>
+                <md-autocomplete ng-disabled="isProductLoading" md-search-text="searchText" md-selected-item-change="selectedItemChange(item)"
+                    md-items="item in querySearch(searchText)" md-item-text="item.display" md-min-length="1" placeholder="Search for product? eg. Led Street light">
+                    <md-item-template>
+                        <img ng-src="{{item.product_image}}" class="image-sm">
+                        <span md-highlight-text="searchText" md-highlight-flags="^i">{{item.title}}</span>
+                        <span class="pull-right"> ${{item.price}}</span>
+                    </md-item-template>
+                    <md-not-found>
+                        No states matching "{{searchText}}" were found.
+                        <a ng-click="newState(searchText)">Create a new one!</a>
+                    </md-not-found>
+                </md-autocomplete>
+            </div>
+            <div class="header-group" layout="row" layout-align="space-between center">
+                <h3>Products</h3>
+                <div>
+                    <md-button class="md-button-text" ng-click="addNew()">
+                        <md-icon>add</md-icon> Add New</md-button>
+                </div>
+            </div>
+            <div class="text-center" ng-if="selectedProducts.length ==0">
+                <i> No Product added,
+                    <a ng-click="addNew()"> Add new product </a>
+                </i>
+            </div>
+            <!-- <pre> {{quote.products | json}}</pre> -->
+        
+            <uib-accordion>
+                <div ng-repeat="product in selectedProducts track by $index" uib-accordion-group template-url="template/accordion-group.html"
+                    class="panel-default">
+                    <ng-form name="childForm">
+        
+                        <uib-accordion-heading>
+                            <span ng-if="quote.products[$index].title">
+                                {{quote.products[$index].title}} (${{quote.products[$index].price}})
+                            </span>
+                            <span ng-if="!quote.products[$index].title">No title </span>
+                            <md-button ng-click="remove($index)" class="md-icon-button pull-button-right ">
+                                <md-icon>close</md-icon>
+                                <md-tooltip> Remove </md-tooltip>
+                            </md-button>
+                            <span ng-if="childForm.$invalid" class="invalid">Invalid</span>
+        
+                        </uib-accordion-heading>
+                        
+                        <div layout="column" layout-align="center center" class="product-image">
+                            <!-- <img ngf-thumbnail="file || product.product_image || 'assets/images/image.jpg'">
+                            <a ng-model="file" ngf-select="selectedFile($file, $index)">Change Image</a> -->
+                            <img ngf-thumbnail="quote.products[$index].file || 'assets/images/image.jpg'">
+                            <input type="file" ngf-select id="myUpload{{$index}}" class="myUploadbutton" onchange="angular.element(this).scope().selectedFile(this)" styled-upload-button5>
+                            
+                        </div>
+                        <!-- {{childForm}} -->
+                        <md-input-container class="md-block">
+                            <label>Product Name / Title</label>
+                            <input required name="title" ng-model="quote.products[$index].title">
+                            <div ng-messages="childForm.title.$error">
+                                <div ng-message="required">Product name is required.</div>
+                            </div>
+                        </md-input-container>
+        
+                        <div layout="row" layout-align="space-between center">
+
+                            
+        
+                            <md-input-container class="md-block">
+                                <label>Qty</label>
+                                <input type="number" required min="1" name="qty" ng-model="quote.products[$index].qty" ng-change="calc(quote.products[$index], $index)">
+                                <div ng-messages="childForm.qty.$error">
+                                    <div ng-message="required">Qty is required.</div>
+                                </div>
+                            </md-input-container>
+        
+                            <md-input-container class="md-block">
+                                <label>Cost (in $)</label>
+                                <input name="price" ng-model="quote.products[$index].price" ng-change="calc(quote.products[$index], $index)">
+                                <div ng-messages="childForm.price.$error">
+                                    <div ng-message="required">Cost is required.</div>
+                                </div>
+                            </md-input-container>
+        
+                            <md-input-container class="md-block">
+                                <label>Extended Cost (in $)</label>
+                                <input required name="extended_cost" ng-model="quote.products[$index].extended_cost" readonly>
+                                <div ng-messages="childForm.extended_cost.$error">
+                                    <div ng-message="required">Extended cost is required.</div>
+                                </div>
+                            </md-input-container>
+                        </div>
+                        <div layout="row" layout-align="space-between center">
+                            <md-input-container class="md-block">
+                                <label>Install Cost/One(in $)</label>
+                                <input type="number" required min="1"  name="install" ng-model="quote.products[$index].install" ng-change="calc(quote.products[$index], $index)">
+                                <div ng-messages="childForm.install.$error">
+                                    <div ng-message="required">Qty is required.</div>
+                                </div>
+                            </md-input-container>
+                            <md-input-container class="md-block">
+                                <label>Install Cost(in $)</label>
+                                <input type="number" required min="1" name="install_products" ng-model="quote.products[$index].install_products" readonly>
+                                <div ng-messages="childForm.install_products.$error">
+                                    <div ng-message="required">Qty is required.</div>
+                                </div>
+                            </md-input-container>
+                        </div>
+                    </ng-form>
+                </div>
+        
+            </uib-accordion>
+        
+        
+        </section>
+     
+        <section class="page-section  md-whiteframe-3dp border-radius-10" ng-hide="isPageLoading">
+            <!--page loader-->
+        
+                <alert-message ng-if="alert" data="alert"> </alert-message>
+                <h4 flex='100' class="">
+                    <i>Project Details...</i>
+                </h4>
+                <div layout="row">
+                    
+                    <md-input-container class="md-block">
+                        <label>Title</label>
+                        <input required name="proname" ng-model="quote.proname" required>
+                        <div ng-messages="quoteForm.proname.$error">
+                            <div ng-message="required">This is required.</div>
+                        </div>
+                    </md-input-container>
+        
+                    <div class="space"></div>
+                    <md-input-container class="md-block">
+                            <label>Property Name</label>
+                            <input required name="property" ng-model="quote.property" required>
+                            <div ng-messages="quoteForm.property.$error">
+                                <div ng-message="required">This is required.</div>
+                            </div>
+                    </md-input-container>
+                </div>
+
+                <div layout="row">
+                    <md-input-container class="md-block">
+                        <!-- <label>QuoteImage</label> -->
+                        <input type='file' id="projectimg" name="projectimg" ng-model="quote.projectimg" onchange="angular.element(this).scope().getProimg(this)" styled-upload-button6/>
+                    </md-input-container>
+                
+                    <div class="space"></div>
+                    <md-input-container class="md-block">
+                        <label>Quote Date</label>
+                        <md-datepicker required ng-model="quote.date" type="date"  md-placeholder="Choose date" name="quotedate"></md-datepicker>
+                        <div ng-messages="quoteForm.quotedate.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="date">Emial must be valid.</div>
+                        </div>
+                    </md-input-container>
+                </div>
+
+                <h4 flex='100' class="">
+                    <i>Prepared For...</i>
+                </h4>
+                <div layout="row">
+                    <md-input-container class="md-block">
+                        <label>Title</label>
+                        <input name="title" type='text' ng-model="quote.title">
+                    </md-input-container>
+                    <div class="space"></div>
+                    <md-input-container class="md-block">
+                        <label>Name</label>
+                        <input required name="name" ng-model="quote.name" required>
+                        <div ng-messages="quoteForm.name.$error">
+                            <div ng-message="required">This is required.</div>
+                        </div>
+                    </md-input-container>
+                </div>
+                
+                <div layout="row">
+                    <md-input-container class="md-block">
+                        <label>Organization</label>
+                        <input name="organization" ng-model="quote.organization">
+                    </md-input-container>
+                
+                    <div class="space"></div>
+                    <md-input-container class="md-block">
+                        <label>Address</label>
+                        <input name="address" ng-model="quote.address">
+                    </md-input-container>
+                </div>
+                
+                <h4 flex='100' class="">
+                    <i>Prepared By...</i>
+                </h4>
+                <div layout="row">
+                    <md-input-container class="md-block">
+                        <label>Name</label>
+                        <input required name="byname" ng-model="quote.byname">
+                        <div ng-messages="quoteForm.byname.$error">
+                            <div ng-message="required">This is required.</div>
+                        </div>
+                    </md-input-container>
+        
+                    <div class="space"></div>
+                    <md-input-container class="md-block">
+                        <label>Position</label>
+                        <input name="position"  type='text' ng-model="quote.position" required>
+                        <div ng-messages="quoteForm.position.$error">
+                            <div ng-message="required">This is required.</div>
+                        </div>
+                    </md-input-container>
+
+                </div>
+                
+                <h4 flex='100' class="">
+                    <i>Executive Summary...</i>
+                </h4>
+                <div layout="row">
+                    <md-input-container class="md-block">
+                        <label>Total Materials Cost ($)</label>
+                        <input name="material_cost" ng-model="quote.material_cost" ng-pattern="/^\d{0,9}(\.\d{1,9})?$/" readonly>
+                        <div ng-messages="quoteForm.material_cost.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="pattern">Please enter valid amount</div>
+                        </div>
+                    </md-input-container>
+        
+                    <div class="space"></div>
+
+
+                    <md-input-container class="md-block">
+                        <label>Tax ($)</label>
+                        <input name="tax" ng-model="quote.tax" ng-change="getTotal()" ng-pattern="/^\d{0,9}(\.\d{1,9})?$/" readonly>
+                        <div ng-messages="quoteForm.tax.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="pattern">Please enter valid amount</div>
+                        </div>
+                    </md-input-container>
+                    <md-select ng-model="quote.rate" placeholder="select tax rate" class="md-no-underline" ng-change="update()">
+                        <md-option value="7">7%</md-option>
+                        <md-option value="6">6%</md-option>
+                    </md-select>
+                    
+                    <div class="space"></div>
+                    
+                </div>
+
+                <div layout="row">
+                    <md-input-container class="md-block">
+                        <label>Maintenance Cost ($)</label>
+                        <input type="number" name="shipping" ng-model="quote.maintenance" ng-change="getTotal()" ng-pattern="/^\d{0,9}(\.\d{1,9})?$/">
+                        <div ng-messages="quoteForm.maintenance.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="pattern">Please enter valid amount</div>
+                        </div>
+                    </md-input-container>
+                
+                    <div class="space"></div>
+                
+                
+                    <md-input-container class="md-block">
+                        <!-- <label>Less Rebates and Incentives ($)</label>
+                        <input name="incentive" ng-model="quote.incentive" ng-change="getTotal()" ng-pattern="/^[0-9]*$/">
+                        <div ng-messages="quoteForm.incentive.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="pattern">Please enter valid amount</div>
+                        </div> -->
+                    </md-input-container>
+                
+                </div>
+
+                <div layout="row">
+                    <md-input-container class="md-block">
+                        <label>Total Price ($)</label>
+                        <input name="total" ng-model="quote.total" ng-pattern="/^\d{0,9}(\.\d{1,9})?$/" readonly>
+                        <div ng-messages="quoteForm.incentive.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="pattern">Please enter valid amount</div>
+                        </div>
+                    </md-input-container>
+                    <div class="space"></div>
+                    <md-input-container class="md-block">
+                        
+                    </md-input-container>
+                </div>
+
+                <h4 flex='100' class="">
+                    <i>For Equations and Graphs</i>
+                </h4>
+                <div layout="row">
+                    <md-input-container class="md-block">
+                        <label>Original wattage per bulb (Kwh)</label>
+                        <input type="number" name="current_wattage" ng-model="quote.current_wattage" ng-change="setwattage()" ng-pattern="/^\d{0,9}(\.\d{1,9})?$/">
+                        <div ng-messages="quoteForm.current_wattage.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="pattern">Please enter valid amount</div>
+                        </div>
+                    </md-input-container>
+                    <div class="space"></div>
+                    <md-input-container class="md-block">
+                        <label>Replacement wattage per bulb (Kwh)</label>
+                        <input type="number" name="project_wattage" ng-model="quote.project_wattage" ng-change="setwattage()" ng-pattern="/^\d{0,9}(\.\d{1,9})?$/">
+                        <div ng-messages="quoteForm.project_wattage.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="pattern">Please enter valid amount</div>
+                        </div>
+                    </md-input-container>
+                    <md-input-container class="md-block">
+                        <label>Number of bulbs replaced</label>
+                        <input name="replace_total" ng-model="quote.replace_total" ng-change="setwattage()" type="number">
+                        <div ng-messages="quoteForm.replace_total.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="pattern">Please enter valid amount</div>
+                        </div>
+                    </md-input-container>
+                </div>
+
+                <div layout="row">
+                    <md-input-container class="md-block">
+                        <label>Energy cost ($ per kWh)</label>
+                        <input name="energy_cost" type="number" ng-model="quote.energy_cost" ng-change="setwattage()" ng-pattern="/^\d{0,9}(\.\d{1,9})?$/">
+                        
+                    </md-input-container>
+                    <div class="space"></div>
+                    <md-input-container class="md-block">
+                        <label>How many days per year are the lights on?</label>
+                        <input name="days_year" ng-model="quote.days_year" ng-change="setwattage()" type="number">
+                        
+                    </md-input-container>
+                    <md-input-container class="md-block">
+                        <label>Initial Cost</label>
+                        <input type="number" name="initial" ng-model="quote.initial" ng-change="setwattage()" ng-pattern="/^\d{0,9}(\.\d{1,9})?$/">
+                        
+                    </md-input-container>
+                </div>
+                <!-- pdf downloader library-->
+                <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.22/pdfmake.min.js"></script> -->
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+                <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/amcharts/3.21.13/plugins/export/libs/pdfmake/vfs_fonts.js"></script> -->
+                <!-- pdf downloader library-->
+                <div class="margin-top-10">
+                    <!-- <md-button ng-disabled="isLoading" type="submit" ng-click="export(quote)" aria-label="submit" class="md-raised md-primary btn-block max-300 btn-action-form">
+                        <span ng-show="isLoading" layout="row" class="btn-loading" layout-align="center center">
+                            <md-progress-circular md-mode="indeterminate" md-diameter="15">
+                            </md-progress-circular>
+                            <small> Processing</small>
+                        </span>
+                        <span ng-hide="isLoading"> Generate quote </span>
+                    </md-button> -->
+                    <md-button ng-disabled="isLoading" type="submit" ng-click="export()" aria-label="submit" class="md-raised md-primary btn-block max-300 btn-action-form">
+                        <span ng-show="isLoading" layout="row" class="btn-loading" layout-align="center center">
+                            <md-progress-circular md-mode="indeterminate" md-diameter="15">
+                            </md-progress-circular>
+                            <small> Processing</small>
+                        </span>
+                        <span ng-hide="isLoading"> Generate quote </span>
+                    </md-button>
+                </div>
+                <!-- <div style="display: none"> -->
+                        <div id="canvas" style="width: 1500px; display:none; background-color: white;">
+                            
+                            <img src="assets/images/new/header1.png" style="width: 1500px;height: 450px;"/>
+                            <span style="font-size: 70px; color: #000000; text-align: right;">Return on Investement</span><br>
+                            <span style="font-size: 70px; color: #000000; text-align: right;">Quote Date : {{quote.projectdate}}</span><br>
+                            <img src="{{quote.projectimg}}" style="width: 1000px;height: 1000px; margin-left: 250px;"/><br>
+                            <span style="font-size: 60px; color: #000000; text-align: right;">{{quote.proname}}</span><br>
+                            <img src="assets/images/new/footer1.png" style="width: 1490px;height: 210px;margin-top: 150px;"/> 
+                        </div>
+                        <div id="canvas2" style="width: 1500px; display:none; background-color: white;">
+                            
+                            <img src="assets/images/new/header2.png" style="width: 1500px;height: 300px;"/>
+                            <span style="font-size: 40px; color: #000000;">{{quote.byname}}</span><br>
+                            <span style="font-size: 40px; color: #000000;">{{quote.position}}</span><br>
+                            <span style="font-size: 40px; color: #000000;">Lighting of Tomorrow</span><br>
+                            <span style="font-size: 40px; color: #000000;">840 E Oakland Park Blvd N Ste 117</span><br>
+                            <span style="font-size: 40px; color: #000000;">Oakland Park, FL 33334</span><br>
+                            <span style="font-size: 40px; color: #000000;">{{quote.projectdate}}</span><br><br>
+
+                            <span style="font-size: 40px; color: #000000;">{{quote.name}}</span><br>
+                            <span style="font-size: 40px; color: #000000;">{{quote.title}}</span><br>
+                            <span style="font-size: 40px; color: #000000;">{{quote.organization}}</span><br>
+                            <span style="font-size: 40px; color: #000000;">{{quote.address}}</span><br>
+                            
+                            <span style="font-size: 40px;">Dear  </span><span style="font-size: 40px; color: #000000;">{{quote.name}}</span><br>
+                            <span style="font-weight: bold;font-size: 40px;">Thank you </span><span style="font-size: 40px; color: #000000;">for providing me with the opportunity to conduct a lighting inspection at </span>
+                            <span style="font-size: 40px; color:#000000">{{quote.property}}.</span><span style="font-size: 40px; color: #000000;">I greatly appreciate your consideration of Lighting of Tomorrow's products and services as well as your willingness to
+                            discover the benefits that LED technology can offer your organization.</span><br>
+
+                            <span style="font-size: 40px; color: #000000;">I am sure you will be delighted with the products specifically chosen for your property. At Lighting of
+                                    Tomorrow, we strive to provide the best quality products at competitive prices. As you may well be aware, LED
+                                    technology continues to grow in efficiency. Currently,</span><span style="font-size: 50px;"> LED lighting is 85% more efficient </span><span style="font-size: 40px; color: #000000;">than traditional
+                                    lighting options, providing you with significant </span><span style="font-size: 50px;">energy savings.</span>
+                            <span style="font-size: 40px; color: #000000;">The following ROI details the specifics of how your organization can benefit from an LED lighting upgrade. If
+                                    you have any questions about this ROI or need further consultation on project options, please do not hesitate
+                                    to reach out to me and I will gladly assist you.</span><span style="font-size: 50px;"> Your project is my priority!</span>
+                            <span style="font-size: 40px; color: #000000;">Thank you again, for the opportunity to provide you with professional solutions. I look forward to continuing working with you!</span>
+                            <br><span style="font-size: 40px; color: #000000;">Bright regards</span>
+                            <img src="assets/images/new/footer2.png" style="width: 1490px;height: 210px;"/> 
+                        </div>
+                        <div id="canvas3" style="width: 1500px; display:none; background-color: white;">
+                            
+                            <img src="assets/images/new/headerSaving.png" style="width: 1500px;height: 300px;"/>
+                            <span style="font-size: 55px; color: #000000; margin-left:550px; width: 100%;margin-top: 150px;">Cost of Waiting</span><br>
+                            <table style="width: 1300px; margin-left: 80px;margin-bottom: 100px;">
+                                <thead>
+                                    <tr>
+                                        <th class="coast-waiting">Monthly($)</th>
+                                        <th class="coast-waiting">Yearly($)</th>
+                                        <th class="coast-waiting">5 Years($)</th>
+                                        <th class="coast-waiting">10 Yeras($)</th>
+                                        <th class="coast-waiting">20 Years($)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="coast-waiting">${{current_energy_cost_string_month}}</td>
+                                        <td class="coast-waiting">${{current_energy_cost_string}}</td>
+                                        <td class="coast-waiting">${{current_energy_cost_string_5year}}</td>
+                                        <td class="coast-waiting">${{current_energy_cost_string_10year}}</td>
+                                        <td class="coast-waiting">${{current_energy_cost_string_20year}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <span style="font-size: 55px; color: #000000; margin-left:350px; width: 100%; ">Annual Energy Saving Projections</span><br>
+                            <hr style="width: 1330px; margin-left: 80px;border-bottom: 5px solid black;">
+                           
+                            <!-- <canvas id="myChart" style="width: 100px;height: 200px;"></canvas>
+                            <canvas id="myChartCost" style="width: 100px;height: 200px;"></canvas> -->
+                            <div class="content" style="width: 1500px;">
+                                <div class="wrapper col-2"><canvas id="myChart" style="width: 500px;height: 1600px;"></canvas></div>
+                                <div class="wrapper col-2"><canvas id="myChartCost" style="width: 500px;height: 1600px;"></canvas></div>
+                            </div>
+                            <span style="font-size: 55px; color: #000000; margin-left:500px; width: 100%;">Electric Summary</span><br>
+                            <table style="width: 1300px; margin-left: 80px; margin-bottom: 250px;">
+                                    <thead>
+                                        <tr>
+                                            <th class="coast-waiting">Existing System Watts</th>
+                                            <th class="coast-waiting">Proposed System Watts</th>
+                                            <th class="coast-waiting">Wattage Reduction</th>
+                                            <th class="coast-waiting">System Reduction</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="coast-waiting">{{current_watt_total_string}}</td>
+                                            <td class="coast-waiting">{{project_watt_total_string}}</td>
+                                            <td class="coast-waiting">{{watt_reduction_string}}</td>
+                                            <td class="coast-waiting">{{percent_reduction}}%</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            
+                            <img src="assets/images/new/footer3.png" style="width: 1490px;height: 210px;"/> 
+                        </div>
+                        <div id="canvas4" style="width: 1500px; display:none; background-color: white;">
+                            
+                            <img src="assets/images/new/headerOperational.png" style="width: 1500px;height: 300px;"/>
+                            <span style="font-size: 40px; color: #000000; margin-left:400px; width: 100%;">Annual Operational Savings Comparison</span><br>
+                            <div class="wrapper col-3"><canvas id="AnnualSavings" style="width: 2000px; height: 500px;margin-left: 250px;"></canvas></div>
+                            <span style="font-size: 35px; color: #000000; margin-left:250px; width: 100%;">Environmental Impact by Greenhouse Gas Comparison in Pounds</span><br>
+                            <div class="wrapper col-3"><canvas id="EnvironmentChart" style="width: 6000px; height: 500px;margin-left: 250px;"></canvas></div>
+                            <img src="assets/images/new/treeimage.png" style="width: 800px; height: 300px;margin-left: 350px;"/>
+                            <img src="assets/images/new/footer4.png" style="width: 1490px;height: 210px;"/> 
+                        </div>
+                        <div id="canvas6" style="width: 1500px; display:none; background-color: white;">
+                            
+                            <img src="assets/images/new/headerSummary.png" style="width: 1500px;height: 300px;"/>
+                            <span style="font-size: 60px; color: #000000; margin-left:600px; width: 100%;margin-top: 40px;">Project Cost</span><br>
+                            <table style="width: 1300px; margin-left: 80px; margin-bottom: 50px;">
+                                <thead>
+                                    <tr>
+                                        <th></th><th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="summary-left">Total Materials Cost</td>
+                                        <td class="summary-right">${{material_cost_string}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="summary-left">Tax</td>
+                                        <td class="summary-right">${{tax_string}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="summary-left">Installation Cost</td>
+                                        <td class="summary-right">${{installation_cost_string}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="summary-left">Shipping</td>
+                                        <td class="summary-right">$0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="summary-left" style="border-top: 3px solid black;">Total Project Cost ($)</td>
+                                        <td class="summary-right" style="border-top: 3px solid black;">${{total_cost_string}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <span style="font-size: 60px; color: #000000; margin-left:400px; width: 100%;margin-top: 40px;">Annual Savings Projection</span><br>
+                            <table style="width: 1300px; margin-left: 80px; margin-bottom: 50px;">
+                                <thead>
+                                    <tr>
+                                        <th></th><th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="summary-left">Energy Savings</td>
+                                        <td class="summary-right">${{energysavings}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="summary-left">Maintenance Saving</td>
+                                        <td class="summary-right">${{maintenancesavings}}</td>
+                                    </tr>
+                                  
+                                    <tr>
+                                        <td class="summary-left" style="border-top: 3px solid black;">Total Annual Savings</td>
+                                        <td class="summary-right" style="border-top: 3px solid black;">${{totalsavings}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <span style="font-size: 60px; color: #000000; margin-left:400px; width: 100%;margin-top: 40px;">10 Years Savings Projection</span><br>
+                            <table style="width: 1300px; margin-left: 80px; margin-bottom: 50px;">
+                                <thead>
+                                    <tr>
+                                        <th></th><th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="summary-left">Energy Savings</td>
+                                        <td class="summary-right">${{energysavings_10year}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="summary-left">Maintenance Saving</td>
+                                        <td class="summary-right">${{maintenancesavings_10year}}</td>
+                                    </tr>
+                                  
+                                    <tr>
+                                        <td class="summary-left" style="border-top: 3px solid black;">Total Savings Over 10 Years</td>
+                                        <td class="summary-right" style="border-top: 3px solid black;">${{totalsavings_10year}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <span style="font-size: 60px; color: #000000; margin-left:450px; width: 100%;margin-top: 40px;">Return on Investment</span><br>
+                            <table style="width: 1300px; margin-left: 80px; margin-bottom: 50px;">
+                                <thead>
+                                    <tr>
+                                        <th></th><th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                   
+                                    <tr>
+                                        <td class="summary-left" style="border-top: 3px solid black;">Payback Period (Years)</td>
+                                        <td class="summary-right" style="border-top: 3px solid black;">1.5</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <img src="assets/images/new/footer6.png" style="width: 1490px;height: 210px; margin-top: 220px;"/> 
+                        </div>
+                        <div id="canvas7" style="width: 1500px; display:none; background-color: white;">
+                            
+                            <img src="assets/images/new/header7.png" style="width: 1500px;height: 300px;"/>
+                            <p class="note-title">Mission</p>
+                            <p class="note-text">Lighting of Tomorrow is an innovative, energy-efficient product & service provider
+                                that facilitates the switch from outdated, inefficient lighting to state-of-the-art LED
+                                technology. We offer lighting design consultation as well as full electrical services
+                                including inspection, installation and maintenance</p>
+                            <p class="note-text">L.o.T.’s Company Values:</p>
+                            <p class="note-text">• Superior service for every customer</p>
+                            <p class="note-text">• Innovation: Smart Lighting and Renewable Energy</p>
+                            <p class="note-text">• Positive change starts with ourselves!</p>
+
+                            <p class="note-title">Vision</p>
+                            <p class="note-text">Lighting of Tomorrow’s vision is to provide efficient, renewable energy solutions that
+                                serve our customers and help our planet. We believe that we have a part to play in
+                                creating a more sustainable, healthier future for our planet.</p>
+                            
+                            <p class="note-title">Strategic Goals</p>
+                            <p class="note-text">Lighting of Tomorrow’s main goal is to achieve significant energy-use reductions
+                                through the installation of energy-efficient smart LED lighting systems. We aim to
+                                illuminate our world one light fixture at a time. Our efficient and affordable smart
+                                lighting solutions allow our users to benefit from energy reduction and cost. All
+                                products and fixtures used by L.o.T. are accredited, certified, and guaranteed for
+                                commercial operation.</p><br>
+                            <p class="note-text">We believe that saving energy is simply the right thing to do. For every customer we
+                                help, we can reduce overall CO2 emissions - directly impacting our environment</p>
+                            <img src="assets/images/new/footer7.png" style="width: 1490px;height: 210px;"/> 
+                        </div>
+                <!-- </div> -->
+        </section>
+    </form>
+</md-content>
+<script>
+    // var ctx = document.getElementById('myChart').getContext('2d');
+    // var myChart = new Chart(ctx, {
+    // type: 'bar',
+    // data: {
+    //     labels: ['Annual KWh'],
+    //     datasets: [{
+    //     label: 'Current',
+    //     data: [30605.25],
+    //     backgroundColor: "rgba(8,67,202,0.8)"
+    //     }, {
+    //     label: 'Projected',
+    //     data: [6476.93],
+    //     backgroundColor: "rgba(238,110,24,0.8)"
+    //     }]
+    // },
+    // options: {
+    //     scales: {
+    //         yAxes: [{
+    //         scaleLabel: {
+    //             display: true,
+    //             labelString: "KWh",
+    //             fontColor: "green"
+    //         },
+    //         ticks: {
+    //                 // Include a dollar sign in the ticks
+    //                 callback: function(value, index, values) {
+    //                     return '$' + value;
+    //                 },
+    //                 beginAtZero: true,
+    //                 fontSize: 18
+    //             }
+    //         }]
+    //     }
+    // }
+    // });
+
+    // var ctx1 = document.getElementById('myChartCost').getContext('2d');
+    // var myChart1 = new Chart(ctx1, {
+    // type: 'bar',
+    // data: {
+    //     labels: ['Annual Energy Cost'],
+    //     datasets: [{
+    //     label: 'Current',
+    //     data: [30605.25],
+    //     backgroundColor: "rgba(8,67,202,0.8)"
+    //     }, {
+    //     label: 'Projected',
+    //     data: [6476.93],
+    //     backgroundColor: "rgba(238,110,24,0.8)"
+    //     }]
+    // }, 
+    // options: {
+    //     scales: {
+    //         yAxes: [{
+    //         scaleLabel: {
+    //             display: true,
+    //             labelString: "Cost",
+    //             fontColor: "green"
+    //         },
+    //         ticks: {
+    //                 // Include a dollar sign in the ticks
+    //                 callback: function(value, index, values) {
+    //                     return '$' + value;
+    //                 },
+    //                 beginAtZero: true,
+    //                 fontSize: 18
+    //             }
+    //         }]
+    //     }
+    // }
+    // });
+
+    // var ctx2 = document.getElementById('AnnualSavings').getContext('2d');
+    // var myChart2 = new Chart(ctx2, {
+    // type: 'bar',
+    // data: {
+    //     labels: ['Energy', 'Maintenance', 'Operational'],
+    //     datasets: [{
+    //     label: 'Current',
+    //     data: [30605.25, 48303, 38493],
+    //     backgroundColor: "rgba(8,67,202,0.8)"
+    //     }, {
+    //     label: 'Projected',
+    //     data: [6476.93, 34940, 38493],
+    //     backgroundColor: "rgba(238,110,24,0.8)"
+    //     }]
+    // }, 
+    // options: {
+    //     scales: {
+    //         yAxes: [{
+    //         scaleLabel: {
+    //             display: true,
+    //             labelString: "Cost",
+    //             fontColor: "green"
+    //         },
+    //         ticks: {
+    //                 // Include a dollar sign in the ticks
+    //                 callback: function(value, index, values) {
+    //                     return '$' + value;
+    //                 },
+    //                 beginAtZero: true,
+    //                 fontSize: 18,
+    //                 stepSize: 10000
+    //             }
+    //         }]
+    //     }
+    // }
+    // });
+    // var ctx3 = document.getElementById('EnvironmentChart').getContext('2d');
+    // var myChart3 = new Chart(ctx3, {
+    // type: 'bar',
+    // data: {
+    //     labels: ['Current', 'Proposed'],
+    //     datasets: [{
+    //     label: 'Current',
+    //     data: [30605.25, 48303],
+    //     backgroundColor: "rgba(8,67,202,0.8)"
+    //     }, ]
+    // }, 
+    // options: {
+    //     scales: {
+    //         yAxes: [{
+    //         scaleLabel: {
+    //             display: true,
+    //             labelString: "Pounds",
+    //             fontColor: "green"
+    //         },
+    //         ticks: {
+    //                 // Include a dollar sign in the ticks
+    //                 callback: function(value, index, values) {
+    //                     return '$' + value;
+    //                 },
+    //                 beginAtZero: true,
+    //                 fontSize: 18,
+    //                 stepSize: 10000
+    //             }
+    //         }]
+    //     }
+    // }
+    // });
+</script>

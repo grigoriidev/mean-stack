@@ -1,0 +1,37 @@
+<md-menu-item>
+  <md-button ui-sref="editCustomer({id:user._id})">
+    <md-icon  md-menu-align-target>edit</md-icon>
+    Edit
+  </md-button>
+</md-menu-item>
+<md-menu-item>
+  <md-button ui-sref="viewCustomer({id:user._id})">
+    <md-icon  md-menu-align-target>pageview</md-icon>
+    View
+  </md-button>
+</md-menu-item>
+<md-menu-item>
+    <md-button ng-href="{{uploadurl}}">
+      <md-icon >file_upload</md-icon>
+      Upload Files
+    </md-button>
+  </md-menu-item>
+<md-menu-item>
+  <md-button ng-click="newEmail()">
+    <md-icon >email</md-icon>
+    New Email
+  </md-button>
+</md-menu-item>
+<md-menu-item>
+  <md-button ui-sref="newTask({id:user._id})">
+    <md-icon >note_add</md-icon>
+    New Task
+  </md-button>
+</md-menu-item>
+
+<md-menu-item>
+  <md-button ui-sref="logCall({id:user._id})">
+    <md-icon >call</md-icon>
+    Log a Call 
+  </md-button>
+</md-menu-item>

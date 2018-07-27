@@ -1,0 +1,27 @@
+<md-input-container class="md-block" style="width: 600px;">
+    <label>Send To</label>
+    <input  name="toEmail" ng-model="toEmail" required>
+    <div ng-messages="toEmail.$error">
+        <div ng-message="required">This is required.</div>
+    </div>
+</md-input-container>
+<md-input-container class="md-block" style="width: 600px;">
+    <label>Subject</label>
+    <input  name="toEmail" ng-model="subject" >
+</md-input-container>
+<div layout="row">
+    <md-input-container class="md-block" >
+        <label>Text</label>
+        <textarea rows="9" name="toText" ng-model="toText"></textarea>
+    </md-input-container>
+</div>
+<md-menu-item>
+    <md-button ng-click="sendEmail()" style="text-align: center;">
+    <md-icon >send</md-icon>
+        Send
+    </md-button>
+    <md-button ng-click="closeWindow()" style="text-align: center;">
+        &nbsp;&nbsp; Cancel
+    </md-button>
+</md-menu-item>
+      

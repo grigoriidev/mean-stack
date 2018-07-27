@@ -1,0 +1,304 @@
+<style>
+        button.md-button-text {
+            background: gray;
+            color: white;
+            margin-left: 160px;
+        }
+        
+        a.md-button-text {
+            background: gray;
+            color: white;
+            margin-left: 95px;
+        }
+        md-icon {
+            color: white;
+        }
+        .invisible {
+            display: none;
+        }
+        textarea {
+            resize: none;
+        }
+    </style>
+    <!-- Page Header -->
+    <div class="theme-page-body-header-box" md-colors="{background: '{{themeColor}}-500'}">
+        <div class="theme-page-body-header-title" layout="row" layout-align="space-between center">
+            <h1 ng-if="!isEdit">Add New Customer </h1>
+            <h1 ng-if="isEdit">Log Call ( {{ user.firstname +' ' + user.lastname}} )  </h1>
+            <a ui-sref="customerCRM"> <md-icon>people</md-icon> Customer list &nbsp;  &nbsp; &nbsp;</a>
+        </div>
+    </div>
+    <!-- End Page Header -->
+    <!-- Page content -->
+    <md-content class="page-content">
+          
+    <!-- section -->
+        <div class="isLoading page-loader border-radius-10  md-whiteframe-3dp" 
+        layout="column" 
+        layout-align="center center " 
+        ng-show="isPageLoading">
+            <md-progress-circular md-mode="indeterminate" md-diameter="52"></md-progress-circular>
+            <span>Loading..</span>
+        </div>
+    
+    
+    <section class="page-section  md-whiteframe-3dp border-radius-10" ng-hide="isPageLoading">
+        <!--page loader-->
+             
+          
+        <form name="personalForm" novalidate class="md-block-input form-bordered" >
+            <alert-message ng-if="alert" data="alert"> </alert-message>
+            <h2 class="invisible">Project Information</h2>
+            <div layout="row" class="invisible">
+            <md-input-container class="md-block" style="display: block !important;">
+                <label>Project Name</label>
+                <input required name="projectname" ng-model="user.projectname" required>
+                <div ng-messages="personalForm.projectname.$error">
+                <div ng-message="required">This is required.</div>
+                </div>
+            </md-input-container>
+        
+                <div class="space"></div>
+                <md-input-container class="md-block">
+                <label>Project Scale</label>
+                <!-- <input required name="lastname" ng-model="user.lastname" required> -->
+                <md-select ng-model="user.projectscale" name="projectscale" ng-required ="true">
+                <md-option value="bigproject" > Big Project </md-option>
+                <md-option value="mediumproject"> Medium Project </md-option>
+                <md-option value="smallproject"> Small Project </md-option>
+                </md-select>
+                <div ng-messages="personalForm.projectscale.$error">
+                <div ng-message="required">This is required.</div>
+                </div>
+            </md-input-container>
+        
+            <div class="space"></div>
+            <md-input-container class="md-block">
+                <label>Status</label>
+                <md-select ng-model="user.status" name="status" ng-required ="true">
+                    <md-option value="newlead" style="background: black;" > New Lead </md-option>
+                    <md-option value="communicating" style="background: yellow;"> Communicating </md-option>
+                    <md-option value="meetingset" style="background: orange;"> Meeting Set </md-option>
+                    <md-option value="quotesent" style="background: red;"> Quote Sent </md-option>
+                    <md-option value="quoteovermonth" style="background: darkred;"> Quote aged over 1 month </md-option>
+                    <md-option value="needsample" style="background: pink;"> Need Sample </md-option>
+                    <md-option value="lightsorderd" style="background: purple;"> Lights Ordered </md-option>
+                    <md-option value="progress" style="background: lightskyblue;"> Order Received/Project in Progress </md-option>
+                    <md-option value="complete" style="background: green;"> Project Complete </md-option>
+                    <md-option value="ongoing" style="background: lightgreen;"> Ongoing </md-option>
+                    <md-option value="stalelead" style="background: lightgray;"> Stale Lead </md-option>
+                    <md-option value="hold" style="background: darkgray;"> Quote Refused/Project on Hold </md-option>
+                    <md-option value="soliciting" style="background: black; color: white;"> Waste of time/Soliciting </md-option>
+                </md-select>
+        
+                <div class="md-errors-spacer"></div>
+                <div class="errors" ng-messages="personalForm.status.$error" >
+                <div ng-message="required">Status is required</div>
+                </div>
+            </md-input-container>
+            </div>
+            <h2 class="invisible">Customer Information</h2>
+            <div layout="row" class="invisible">
+            <md-input-container class="md-block">
+                <label>First Name</label>
+                <input required name="firstname" ng-model="user.firstname" required>
+                <div ng-messages="personalForm.firstname.$error">
+                <div ng-message="required">This is required.</div>
+                </div>
+            </md-input-container>
+        
+            <div class="space"></div>
+            <md-input-container class="md-block">
+            <label>Last Name</label>
+            <input required name="lastname" ng-model="user.lastname" required>
+            <div ng-messages="personalForm.lastname.$error">
+                <div ng-message="required">This is required.</div>
+            </div>
+            </md-input-container>
+        
+            <div class="space"></div>
+            <md-input-container class="md-block">
+            <label>Gender</label>
+            <md-select ng-model="user.gender" name="gender" ng-required ="true">
+                <md-option value="male" > Male </md-option>
+                <md-option value="female"> Female </md-option>
+            </md-select>
+            <div ng-messages="personalForm.gender.$error">
+                <div ng-message="required">This is required.</div>
+            </div>
+            </md-input-container>
+            </div>
+        
+            <div layout="row" class="invisible">
+            
+                <md-input-container class="md-block invisible">
+                    <label>Phone Number</label>
+                    <input  name="phone" ng-model="user.phone">
+                    <div ng-messages="personalForm.phone.$error">
+                    <div ng-message="required">Project amount is required.</div>
+                    <div ng-message="minlength">Please enter valid mobile number</div>
+                    <div ng-message="maxlength">Please enter valid mobile number</div>
+                    </div>
+                </md-input-container>
+            
+                <div class="space"></div>
+            
+                <md-input-container class="md-block">
+                    <label>Email</label>
+                    <input type='email' required name="email" ng-model="user.email" ng-pattern='/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/' required>
+                    <div ng-messages="personalForm.email.$error">
+                    <div ng-message="required">Full name is required.</div>
+                    <div ng-message="pattern">Email must be valid.</div>
+                    </div>
+                </md-input-container>
+        
+            </div>
+            <div layout="row" class="invisible">
+        
+            <md-input-container class="md-block">
+                <label>Connection</label>
+                <input  name="connection" ng-model="user.connection" required>
+                <div ng-messages="personalForm.connection.$error">
+                <div ng-message="required">Connection is required.</div>
+                </div>
+            </md-input-container>
+        
+            <div class="space"></div>
+        
+            <md-input-container class="md-block">
+        
+                <label>Title/Position</label>
+                <input  name="title" ng-model="user.title" required>
+                <div ng-messages="personalForm.title.$error">
+                <div ng-message="required">Title/Position is required.</div>
+                </div>
+            </md-input-container>
+        
+            </div>
+            <div layout="row" class="invisible">
+            <md-input-container class="md-block">
+                <label>Company</label>
+                <input required name="company" ng-model="user.company" required>
+                <div ng-messages="personalForm.company.$error">
+                <div ng-message="required">This is required.</div>
+                </div>
+            </md-input-container>
+        
+            <div class="space"></div>
+            <md-input-container class="md-block">
+                <label>Source</label>
+                <input  name="source" ng-model="user.source" >
+                <div ng-messages="personalForm.source.$error">
+                <div ng-message="required">This is required.</div>
+                </div>
+            </md-input-container>
+            </div>
+        
+            <div layout="row" class="invisible">
+                <md-input-container class="md-block">
+                <label>Initial Contact Date</label>
+                <md-datepicker ng-model="user.initialDate" md-placeholder="Choose date"></md-datepicker>
+                <div ng-messages="personalForm.quote_date.$error">
+                    <div ng-message="required">This is required.</div>
+                </div>
+                </md-input-container>
+            
+                <div class="space"></div>
+                <md-input-container class="md-block">
+                <label>Latest Contact Date</label>
+                <md-datepicker ng-model="user.latestDate" md-placeholder="Choose date"></md-datepicker>
+                <div ng-messages="personalForm.contract_date.$error">
+                    <div ng-message="required">This is required.</div>
+                </div>
+                </md-input-container>
+            </div>
+        
+            <div layout="row" class="invisible">
+                <md-input-container class="md-block">
+                    <label>Create Customer Foler</label>
+                    <!-- <upload-file-custom > </upload-file-custom> -->
+                    <md-button class="md-button-text" path="folderPath" add-new-folder> 
+                        <md-icon>add</md-icon>
+                        <span>Add Customer Folder</span>
+                    </md-button>
+                </md-input-container>
+    
+                <div class="space"></div>
+                <md-input-container class="md-block">
+                <label>Zone</label>
+                <input required name="zone" ng-model="user.zone">
+                <div ng-messages="personalForm.zone.$error">
+                    <div ng-message="required">This is required.</div>
+                </div>
+                </md-input-container>
+            
+                <md-input-container class="md-block">
+                <label>Property Address</label>
+                <input required name="address" ng-model="user.address">
+                <div ng-messages="personalForm.address.$error">
+                    <div ng-message="required">This is required.</div>
+                </div>
+                </md-input-container>
+            </div>
+        
+            <div layout="row" class="invisible">
+                <md-input-container class="md-block">
+                <label>Project Notes</label>
+                <textarea rows="5" name="notes" ng-model="user.notes"></textarea>
+                <div ng-messages="personalForm.notes.$error">
+                    <div ng-message="required">This is required.</div>
+                </div>
+                </md-input-container>
+            </div>
+        
+            <h2 class="invisible">History</h2>
+            <div layout="row" class="invisible">
+            <md-input-container class="md-block">
+                <label>Initial Contact Date</label>
+                <input name="initialDate" ng-model="user.initialDate" >
+                <div ng-messages="personalForm.initialDate.$error">
+                <div ng-message="required">This is required.</div>
+                </div>
+            </md-input-container>
+            
+            <div class="space"></div>
+            <md-input-container class="md-block">
+                <label>Latest Contact Date</label>
+                <input name="latestDate" ng-model="user.latestDate" >
+            </md-input-container>
+            </div>
+            <div layout="row" class="invisible">
+                <md-input-container class="md-block">
+                <label>New Task</label>
+                <textarea rows="3" name="task" ng-model="user.task" />
+                </md-input-container>
+            
+                <div class="space invisible"></div>
+                <md-input-container class="md-block" style="display:none;">
+                <label>New Event</label>
+                <md-datepicker ng-model="user.event" type="date" md-placeholder="Choose date" name="event"></md-datepicker>
+                </md-input-container>
+            </div>
+            <h2 style="text-align: center;">Log Call Window</h2>
+            <div layout="row">
+                <md-input-container class="md-block">
+                    <label>Log Call</label>
+                    <textarea rows="5" name="call" ng-model="user.call"> </textarea>
+                </md-input-container>
+            </div>
+        
+            <div class="margin-top-10">
+            <md-button ng-disabled="isLoading" type="submit"  
+                ng-click="submitForm(personalForm, user)" aria-label="submit"
+                class="md-raised md-primary btn-block max-300 btn-action-form">
+                <span ng-show="isLoading" layout="row" class="btn-loading"   layout-align="center center">   
+                <md-progress-circular md-mode="indeterminate" md-diameter="15">
+                </md-progress-circular> <small> Processing</small>
+                </span>
+                <span ng-hide="isLoading"> LOG CALL </span>
+            </md-button>
+            </div>
+        </form>
+    </section>
+    </md-content>
+        <!--End Page content -->
